@@ -23,15 +23,17 @@
 # create a Cordova/iOS project
 # 
 # USAGE
-#   ./create <path_to_new_project> <package_name> <project_name>
+#   ./create [--embed_cordova] <path_to_new_project> <package_name> <project_name>
 #
 # EXAMPLE
 #  ./create ~/Desktop/radness org.apache.cordova.radness Radness
+#  ./create --embed_cordova ~/Desktop/radness org.apache.cordova.radness Radness
 #
 set -e
 
 function usage() {
-  echo "Usage: $0 <path_to_new_project> <package_name> <project_name>"
+  echo "Usage: $0 [--embed_cordova] <path_to_new_project> <package_name> <project_name>"
+  echo "	--embed_cordova: copy CordovaLib into new project so it is self-contained"
   echo "	<path_to_new_project>: Path to your new Cordova iOS project"
   echo "	<package_name>: Package name, following reverse-domain style convention"
   echo "	<project_name>: Project name"
@@ -43,6 +45,24 @@ if [ $# -lt 3 ]; then
 	usage
 fi
 
+# check whether it is a proper create command (4 args, with first arg --embed_cordova)
+if [ $# -eq 4 -a "$1" != "--embed_cordova" ]; then
+	usage
+fi
+
+if [ $# -eq 3 ]; then
+	WILL_EMBED_CORDOVA=false
+	PROJECT_PATH=$1
+	PACKAGE=$2
+	PROJECT_NAME=$3
+fi
+if [ $# -eq 4 ]; then
+	WILL_EMBED_CORDOVA=true
+	PROJECT_PATH=$2
+	PACKAGE=$3
+	PROJECT_NAME=$4
+fi
+
 # the two lines below are to get the current folder, and resolve symlinks
 SCRIPT="$0"
 # need this for relative symlinks
@@ -52,9 +72,15 @@ done
 
 BINDIR=$( cd "$( dirname "$SCRIPT" )" && pwd )
 
-PROJECT_PATH=$1
-PACKAGE=$2
-PROJECT_NAME=$3
+# echo $PROJECT_PATH
+# echo $WILL_EMBED_CORDOVA
+# if $WILL_EMBED_CORDOVA ;  then
+#     echo "tested true"
+# else
+#     echo "tested false"
+# fi
+# exit 1
+
 
 # check whether the project path exists and is not empty
 if [ -d "$PROJECT_PATH" ]; then
@@ -66,6 +92,18 @@ fi
 
 # copy the files in; then modify them
 cp -r "$BINDIR/templates/project/" "$PROJECT_PATH"
+
+# copy in CordovaLib itself, if requested
+if $WILL_EMBED_CORDOVA ; then
+	EMBEDDED_CORDOVALIB_DIR="$PROJECT_PATH/Externals/embeddedCordovaLib"
+	mkdir -p $EMBEDDED_CORDOVALIB_DIR
+	cp -r "$BINDIR/../CordovaLib/Classes" $EMBEDDED_CORDOVALIB_DIR
+	cp -r "$BINDIR/../CordovaLib/CordovaLib_Prefix.pch" $EMBEDDED_CORDOVALIB_DIR
+	cp -r "$BINDIR/../CordovaLib/CordovaLib.xcodeproj" $EMBEDDED_CORDOVALIB_DIR
+	cp -r "$BINDIR/../CordovaLib/javascript" $EMBEDDED_CORDOVALIB_DIR
+	cp -r "$BINDIR/../CordovaLib/Makefile" $EMBEDDED_CORDOVALIB_DIR
+	cp -r "$BINDIR/../CordovaLib/VERSION" $EMBEDDED_CORDOVALIB_DIR
+fi
 
 # I've tried to be thorough in my documentation of the manual actions below...
 # on first brush it would seem that the right solution would be to brute force
