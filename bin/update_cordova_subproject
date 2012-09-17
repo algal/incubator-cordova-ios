@@ -1,6 +1,13 @@
 #!/usr/bin/python
 """
-Updates the subproject path of the CordovaLib entry to point to this script's version of Cordova.
+Updates the path of the CordovaLib subproject entry within your project.
+
+By default, sets the path to point to the CordovaLib in this script's source tree.
+
+With the command line switch --embed_cordova, sets the path to an
+embedded copy of CordovaLib within your project at
+Externals/embeddedCordovaLib, the location used if the "create" script is called
+with this command line switch.
 
 Usage: CordovaVersion/bin/update_cordova_project [--embed_cordova] path/to/your/app.xcodeproj
 """
