@@ -145,4 +145,8 @@ R=$PROJECT_PATH/$PROJECT_NAME
 "$BINDIR/replaces" "$R/$PROJECT_NAME-Info.plist" --ID-- $PACKAGE
 
 # Make the sub-project reference to Cordova have the correct path.
-"$BINDIR/update_cordova_subproject" "$R.xcodeproj/project.pbxproj" > /dev/null
+if $WILL_EMBED_CORDOVA ; then
+	"$BINDIR/update_cordova_subproject" --embed_cordova "$R.xcodeproj/project.pbxproj" > /dev/null
+else
+	"$BINDIR/update_cordova_subproject" "$R.xcodeproj/project.pbxproj" > /dev/null
+fi
